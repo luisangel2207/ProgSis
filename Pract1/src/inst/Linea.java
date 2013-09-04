@@ -383,7 +383,7 @@ class Linea
 					}
 							
 						cont++;	//control del numero de linea
-			
+						error_det = 0; //bandera en estado inicial para siguiente validacion
 				}
 				else
 					finEjecucion = 1;	//Activa la bandera para dejar de leer el archivo
