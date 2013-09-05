@@ -125,13 +125,13 @@ class Linea
 		switch(error)
 		{
 			case 1:
-				tipo = "Error, longitud de cadena invalida " + palabra; 	//Error tipo 1
+				tipo = "Error, longitud de comando invalido " + palabra; 	//Error tipo 1
 				break;
 			case 2:
 				tipo = "Error de sintaxis " + palabra;		//Error tipo 2
 				break;
 			case 3:
-				tipo = "Error, numero de cadenas invalidas " + palabra;		//Error tipo 3
+				tipo = "Error, numero de comandos invalidos " + palabra;		//Error tipo 3
 				break;
 			case 4:
 				tipo = "Error, ausencia de directica END";		//Error tipo 4
@@ -351,7 +351,7 @@ class Linea
 							cadena.etq = " ";
 							cadena.codop = " ";		//limpiando comandos
 							cadena.oper = " ";
-							comando = cadena.Error(3,"");		//Error de numero de cadenas
+							comando = cadena.Error(3,", verificar que el comando sea un Codop");		//Error de numero de cadenas
 							comando = "Linea " + cont + " " + comando;	//concatenacion de la linea de error
 							cadena.Archivo(comando, ruta, nombre, 2);	//Escribir en el archivo .err
 						}
@@ -362,7 +362,7 @@ class Linea
 						cadena.etq = " ";
 						cadena.codop = " ";
 						cadena.oper = " ";
-						comando = cadena.Error(3,"");		//Error de numero de cadenas
+						comando = cadena.Error(3,", Exceso de comandos");		//Error de numero de cadenas
 						comando = "Linea " + cont + " " + comando;	//concatenacion de la linea de error	
 						cadena.Archivo(comando, ruta, nombre, 2);	//Escribir en el archivo .err
 						break;
