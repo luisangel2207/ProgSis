@@ -83,7 +83,7 @@ class Linea
 		}
 		else
 		{
-			if(!(codop.matches("[a-zA-Z]+[a-zA-z1-9]*[.]?[a-zA-z1-9]*")))	//validar sintaxis de codigo de operacion
+			if(!(codop.matches("[a-zA-Z]+[a-zA-z]*[.]?[a-zA-z]*")))	//validar sintaxis de codigo de operacion
 				return 2;		//Devuelve error de tipo 2
 		}
 		return 0;		//No hay errores en el Codigo de Operacion
@@ -253,7 +253,9 @@ class Linea
 						cadena.etq = token.nextToken();		//3 palabras encontradas
 						cadena.codop = token.nextToken();
 						cadena.oper = token.nextToken();
-								
+						
+						if(cadena.linea.startsWith(cadena.etq))
+						{
 						if((error = cadena.Etiqueta())!= 0)		//validacion de la etiqueta
 						{
 							comando = cadena.Error(error,"en Etiqueta");		//Detalle del tipo de error
@@ -269,12 +271,24 @@ class Linea
 							comando = "Linea " + cont + " " + comando;		//concatenacion de tipo de error y su ubicacion
 							cadena.Archivo(comando,ruta, nombre, 2);	//Escribir en el archivo .err
 						}
+						if(cadena.oper.contains(";"))		//mod
+						{
+							StringTokenizer sep = new StringTokenizer(cadena.oper,";");		//mod
+							cadena.oper = sep.nextToken();			//mod
+						}
 									
 						if(cadena.codop.equalsIgnoreCase("END"))	//Verifica que el codop no sea la palabra End
 							termina = 1;	//Palabra End detectada
 								
 						if(error == 0)
-							band = 1;	//linea de codigo ensamblador sin errores		
+							band = 1;	//linea de codigo ensamblador sin errores
+						}
+						else
+						{
+							comando = cadena.Error(3,", Exceso de comandos");		//Error de numero de cadenas
+							comando = "Linea " + cont + " " + comando;	//concatenacion de la linea de error	
+							cadena.Archivo(comando, ruta, nombre, 2);	//Escribir en el archivo .err
+						}
 						break;
 					case 2:
 						if((cadena.linea.startsWith(" ")) || (cadena.linea.startsWith("\t")))
@@ -386,7 +400,12 @@ class Linea
 						error_det = 0; //bandera en estado inicial para siguiente validacion
 				}
 				else
+				{
+					comando = cont+"	"+cadena.etq+"	"+cadena.codop+"	"+cadena.oper;	//concatenacion de tokens //mod
+					cadena.Archivo(comando, ruta, nombre, band); //mod
+					System.out.println(comando); //mod
 					finEjecucion = 1;	//Activa la bandera para dejar de leer el archivo
+				}
 			}	//fin while
 					
 			if(finEjecucion == 0)		//si la bandera no ha sido activada
