@@ -60,15 +60,126 @@ class Automata
 		return estErrDet;
 	}
 	
-	public void inicia4Comandos(Analizador An,StringTokenizer token,Archivo ArcErr,byte cont)
+	public void inicia4Comandos(Analizador An,StringTokenizer token,Archivo ArcErr,String linea,byte cont)
 	{
 		An.ingresarEtiqueta(token.nextToken());
 		An.ingresarCodop(token.nextToken());
 		An.ingresarOperando(token.nextToken());
 		String comen = token.nextToken();
-		
-		if(!comen.equalsIgnoreCase("NULL"))		//cualquier otra cadena genera un error
-			ingresaEstErr(estadoError(An,ArcErr,cont));		//transicion al estado de Error y se ingresa el valor del atributo
+		if(linea.startsWith(An.regresaEtq()))	//verifica que la linea comience con la Etiqueta
+		{
+			if(!comen.equalsIgnoreCase("NULL"))		//cualquier otra cadena genera un error
+				ingresaEstErr(estadoError(An,ArcErr,cont));		//transicion al estado de Error y se ingresa el valor del atributo
+			else
+			{
+				ingresaEstEtq(estadoEtiqueta(An,ArcErr,cont));
+				ingresaEstCodop(estadoCodop(An,ArcErr,cont));
+				ingresaEstEnd(estadoEnd(An));
+				ingresaEstSinErr(estadoSinErrores(estError,estEtq,estCodop,estErrDet));
+			}
+		}
+		else
+		{
+			String comando = An.describirError((byte)5,", la linea no comienza con Etq" );		//Error de numero de cadenas
+			comando = "Linea " + cont + " " + comando;	//concatenado linea de error
+			try
+			{
+				ArcErr.escribir(comando); 	//escribir linea en el archivo .err
+			}
+			catch(IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
+			
+	}
+	
+	public void inicia3Comandos(Analizador An,StringTokenizer token,Archivo ArcErr,String linea,byte cont)
+	{
+		An.ingresarEtiqueta(token.nextToken());
+		An.ingresarCodop(token.nextToken());
+		An.ingresarOperando(token.nextToken());
+		if(!An.regresaOper().equalsIgnoreCase("NULL"))
+		{
+			if(linea.startsWith(An.regresaEtq()))
+			{
+				ingresaEstEtq(estadoEtiqueta(An,ArcErr,cont));
+				ingresaEstCodop(estadoCodop(An,ArcErr,cont));
+				ingresaEstEnd(estadoEnd(An));
+				ingresaEstSinErr(estadoSinErrores(estError,estEtq,estCodop,estErrDet));
+			}
+			else
+			{
+				String comando = An.describirError((byte)5,", la linea no comienza con Etq" );		//Error de numero de cadenas
+				comando = "Linea " + cont + " " + comando;	//concatenado linea de error
+				try
+				{
+					ArcErr.escribir(comando); 	//escribir linea en el archivo .err
+				}
+				catch(IOException e)
+				{
+					e.printStackTrace();
+				}
+			}
+		}
+		else
+			continua2Comandos(An,ArcErr,linea,cont);		
+	}
+	
+	public void inicia2Comandos(Analizador An,StringTokenizer token,Archivo ArcErr,String linea,byte cont)
+	{
+		if((linea.startsWith(" ")) || (linea.startsWith("\t")))
+		{
+			An.ingresarEtiqueta("NULL");
+			An.ingresarCodop(token.nextToken());
+			An.ingresarOperando(token.nextToken());
+			
+			ingresaEstCodop(estadoCodop(An,ArcErr,cont));
+			ingresaEstEnd(estadoEnd(An));
+			ingresaEstSinErr(estadoSinErrores(estError,estEtq,estCodop,estErrDet));
+		}
+		else
+		{
+			An.ingresarEtiqueta(token.nextToken());
+			An.ingresarCodop(token.nextToken());
+			An.ingresarOperando("NULL");
+			
+			if(!An.regresaCodop().equalsIgnoreCase("NULL"))
+			{
+				ingresaEstEtq(estadoEtiqueta(An,ArcErr,cont));
+				ingresaEstCodop(estadoCodop(An,ArcErr,cont));
+				ingresaEstEnd(estadoEnd(An));
+				ingresaEstSinErr(estadoSinErrores(estError,estEtq,estCodop,estErrDet));
+			}
+			else
+			{
+				String comando = An.describirError((byte)3,", formato de instruccion invalido" );		//insuficientes comandos
+				comando = "Linea " + cont + " " + comando;	//concatenado linea de error
+				try
+				{
+					ArcErr.escribir(comando); 	//escribir linea en el archivo .err
+				}
+				catch(IOException e)
+				{
+					e.printStackTrace();
+				}
+			}
+				
+		}
+	}
+	
+	public void continua2Comandos(Analizador An,Archivo ArcErr,String linea,byte cont)
+	{
+		if((linea.startsWith(" ")) || (linea.startsWith("\t")))
+		{
+			An.ingresarOperando(An.regresaCodop());		//movemos los
+			An.ingresarCodop(An.regresaEtq());			//comandos a sus
+			An.ingresarEtiqueta("NULL");				//respectivos atributos
+			
+			ingresaEstCodop(estadoCodop(An,ArcErr,cont));
+			ingresaEstEnd(estadoEnd(An));
+			ingresaEstSinErr(estadoSinErrores(estError,estEtq,estCodop,estErrDet));
+		}
 		else
 		{
 			ingresaEstEtq(estadoEtiqueta(An,ArcErr,cont));
@@ -78,19 +189,20 @@ class Automata
 		}
 	}
 	
-	public void inicia3Comandos(Analizador An,StringTokenizer token)
+	public void inicia1Comando(Analizador An,StringTokenizer token,Archivo ArcErr,String linea,byte cont)
 	{
-		
-	}
-	
-	public void inicia2Comandos(Analizador An,StringTokenizer token)
-	{
-		
-	}
-	
-	public void inicia1Comando(Analizador An,StringTokenizer token)
-	{
-		
+		if((linea.startsWith(" ")) || (linea.startsWith("\t")))
+		{
+			An.ingresarEtiqueta("NULL");
+			An.ingresarCodop(token.nextToken());
+			An.ingresarOperando("NULL");
+			
+			ingresaEstCodop(estadoCodop(An,ArcErr,cont));
+			ingresaEstEnd(estadoEnd(An));
+			ingresaEstSinErr(estadoSinErrores(estError,estEtq,estCodop,estErrDet));
+		}
+		else
+			ingresaEstErr(estadoError(An,ArcErr,cont));		//transicion al estado de Error y se ingresa el valor del atributo
 	}
 	
 	public boolean estadoError(Analizador An,Archivo ArcErr,byte cont)

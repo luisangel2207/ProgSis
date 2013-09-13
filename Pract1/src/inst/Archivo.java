@@ -1,6 +1,5 @@
 package inst;
 
-import java.util.Vector;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;

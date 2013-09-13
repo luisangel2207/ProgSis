@@ -254,7 +254,7 @@ class Linea
 						cadena.codop = token.nextToken();
 						cadena.oper = token.nextToken();
 						
-						if(cadena.linea.startsWith(cadena.etq))
+						if(cadena.linea.startsWith(cadena.etq))	//mod
 						{
 						if((error = cadena.Etiqueta())!= 0)		//validacion de la etiqueta
 						{
@@ -283,11 +283,11 @@ class Linea
 						if(error == 0)
 							band = 1;	//linea de codigo ensamblador sin errores
 						}
-						else
+						else	//mod
 						{
-							comando = cadena.Error(3,", Exceso de comandos");		//Error de numero de cadenas
-							comando = "Linea " + cont + " " + comando;	//concatenacion de la linea de error	
-							cadena.Archivo(comando, ruta, nombre, 2);	//Escribir en el archivo .err
+							comando = cadena.Error(3,", Exceso de comandos");		//Error de numero de cadenas //mod
+							comando = "Linea " + cont + " " + comando;	//concatenacion de la linea de error	//mod
+							cadena.Archivo(comando, ruta, nombre, 2);	//Escribir en el archivo .err	//mod
 						}
 						break;
 					case 2:

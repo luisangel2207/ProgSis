@@ -1,6 +1,5 @@
 package inst;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Scanner;
 import java.util.StringTokenizer;
@@ -77,7 +76,7 @@ public class Analizador
 		}
 		else
 		{
-			if(!(codop.matches("[a-zA-Z]+[a-zA-z1-9]*[.]?[a-zA-z1-9]*")))	//validar sintaxis de codigo de operacion
+			if(!(codop.matches("[a-zA-Z]+[a-zA-z]*[.]?[a-zA-z]*")))	//validar sintaxis de codigo de operacion
 				return 2;		//Devuelve error de tipo 2
 		}
 		return 0;		//No hay errores en el Codigo de Operacion
@@ -100,6 +99,8 @@ public class Analizador
 			case 4:
 				tipo = "Error, ausencia de directica END";		//Error tipo 4
 				break;
+			case 5:
+				tipo = "Error, formato de instruccion erroneo " + palabra;
 		}
 		return tipo;
 	}
@@ -112,11 +113,20 @@ public class Analizador
 		while(st.hasMoreTokens())	
 		{
 			aux = st.nextToken();  
-			if(!aux.startsWith(";"))	
+			if(!aux.contains(";"))		//si el comando no tiene un ;
 				comando = comando + aux + " ";	//concatenar mientras no encontremos el comentario
 			else
 			{
-				comando = comando + "NULL" + " "; //se asigna NULL al comentario
+				if(aux.startsWith(";"))		//si empieza con ;
+				{
+					comando = comando + "NULL";
+					break;
+				}
+				else
+				{
+					StringTokenizer sep = new StringTokenizer(aux,";");	//separamos el comando del comentario
+					comando = comando + sep.nextToken(";") + " NULL"; //se asigna NULL al comentario
+				}
 				break;
 			}
 		}
@@ -132,17 +142,20 @@ public class Analizador
 			return false;
 	}
 	
-	
-
+	public void limpiarAnaliz()
+	{
+		etq = "";
+		codop = "";
+		oper = "";
+	}
 	
 	public static void main(String[] args) throws IOException
 	{
 		String nombre,ruta,comando,encabezado,linea;
-		int tokens,error_det = 0;
-		int error = 0;
+		byte tokens;
 		byte cont = 1;
-		boolean band = false,termina = false,finEjecuccion = false;
-		
+		boolean band,termina,finEjecuccion;
+		band = termina = finEjecuccion = false;
 		Analizador An = new Analizador();
 		Scanner S = new Scanner(System.in);
 				
@@ -203,20 +216,31 @@ public class Analizador
 					switch(tokens)
 					{
 					case 4:		//4 palabras encontradas
-						Au.inicia4Comandos(An, token, ArcErr, cont);	//inicia el automata con 4 tokens
+						Au.inicia4Comandos(An, token, ArcErr,linea,cont);	//inicia el automata con 4 tokens
 						termina = Au.regresaEstEnd();	//verifica si el Codop es la palabra END
 						band = Au.regresaEstSinErr();	//veridica que el codigo no tenga errores
 						break;
-					case 3:
-						Au.inicia3Comandos(An, token);
+					case 3:		//3 palabras encontradas
+						Au.inicia3Comandos(An, token,ArcErr,linea,cont);
+						termina = Au.regresaEstEnd();	//verifica si el Codop es la palabra END
+						band = Au.regresaEstSinErr();	//veridica que el codigo no tenga errores
 						break;
-					case 2:
-						Au.inicia2Comandos(An, token);
+					case 2:		//2 palabras encontradas
+						Au.inicia2Comandos(An, token,ArcErr,linea,cont);
+						termina = Au.regresaEstEnd();	//verifica si el Codop es la palabra END
+						band = Au.regresaEstSinErr();	//veridica que el codigo no tenga errores
 						break;
 					case 1:
-						Au.inicia1Comando(An, token);
+						Au.inicia1Comando(An,token,ArcErr,linea,cont);
+						termina = Au.regresaEstEnd();	//verifica si el Codop es la palabra END
+						band = Au.regresaEstSinErr();	//veridica que el codigo no tenga errores
 						break;
 					case 0:		//linea en blanco
+						break;
+					default:
+						comando = An.describirError((byte)3,", revisar limite de comandos");		//exceso de comandos en la linea
+						comando = "Linea " + cont + " " + comando;
+						ArcErr.escribir(comando);	//Escribe el error en el Archivo .err
 						break;
 					}	//fin switch
 				}	//fin else
@@ -234,10 +258,16 @@ public class Analizador
 					}
 					
 					cont++;	//control del numero de linea
+					An.limpiarAnaliz();
 					Au.reiniciarAutomata();		//Reestablece los valores del automata
 				}
 				else
+				{
 					finEjecuccion = true;	//activa la bandera para dejar de leer el archivo
+					comando = cont+"	"+An.regresaEtq()+"	"+An.regresaCodop()+"	"+An.regresaOper();	//concatenacion de tokens
+					System.out.println(comando);	//Salida  de la linea a consola
+					ArcIns.escribir(comando);	//Escritura de la linea en el archivo .inst
+				}
 			}	//fin while
 			
 			if(!finEjecuccion)		//si la bandera no ha sido activada
@@ -259,40 +289,6 @@ public class Analizador
 			e.printStackTrace();
 		}
 		
-		
-		/*
-		StringTokenizer token = new StringTokenizer(comando);
-		tokens = (byte)token.countTokens();
-		
-		switch(tokens)
-		{
-		case 0:			//linea vacia
-			break;
-		default :		//instruccion invalida 
-			String[] comandos = new String[tokens];
-			
-			for(byte i = 0;i < tokens; i++)
-				comandos[i] = token.nextToken();
-			
-			if(comandos[4].startsWith(";"))
-			{
-				//usar el caso 4
-			}	
-			else	
-			//aplicar esto con los nuevos metodos
-			/*cadena.etq = " ";
-			cadena.codop = " ";
-			cadena.oper = " ";
-			comando = cadena.Error(3,", Exceso de comandos");		//Error de numero de cadenas
-			comando = "Linea " + cont + " " + comando;	//concatenacion de la linea de error	
-			cadena.Archivo(comando, ruta, nombre, 2);	//Escribir en el archivo .err*/
-			//break;
-		//} llave switch	
-	//fin switc
-		
-		
-		
-
 	}	//fin main
 
 }	//fin clase Analizador
