@@ -115,6 +115,9 @@ public class Analizador
 			case 9:
 				tipo = "Error, Codop No existe en el Tabop";
 				break;
+			case 10:
+				tipo = "Error, Directiva ORG sin Operando" + palabra;
+				break;
 		}
 		return tipo;
 	}
@@ -196,7 +199,7 @@ public class Analizador
 		
 		Archivo Tabop = new Archivo(ruta,"tabop.txt",(byte)0);	//Se creo un archivo tabop
 		
-		Automata Au = new Automata();
+		Automata Au = new Automata();	//se crea el Objeto Automata
 		Instruccion In = new Instruccion();	//se crea el Objeto Instruccion
 		
 		listadeInst = In.cargarTabop(An, Tabop, ArcErr);	//Arreglo  de instrucciones de cada cada Codop
@@ -274,7 +277,7 @@ public class Analizador
 				{
 					if(band && Au.regresaEstSinErr() && !Au.regresaEstErrDet())	//instruccion valida
 					{//Codigo de la prac2
-						if(ArbolDeInst.containsKey(An.regresaCodop()))						
+						if(ArbolDeInst.containsKey(An.regresaCodop()))	//Si el arbol contiene el Codop					
 						{
 							if(In.necesitaOper(An.regresaCodop(), listadeInst) && !An.regresaOper().equalsIgnoreCase("NULL")) //necesita operando y tiene operando
 							{
@@ -282,22 +285,18 @@ public class Analizador
 								System.out.println(comando);	//Salida  de la linea a consola
 						
 								ArcIns.escribir(comando);	////Escritura de la linea en el archivo .inst
-						
-								band = false;  //regresar a estado inicial
 							}
 							else if(!In.necesitaOper(An.regresaCodop(), listadeInst) && !An.regresaOper().equalsIgnoreCase("NULL")) //no necesita operando y tiene operando
 							{
 								comando = An.describirError((byte)8,", retirar Operando de la instruccion"); //Codop con Operando innecesario
 								comando = "Linea " + cont + " " + comando;
 								ArcErr.escribir(comando);	//Escribe el error en el Archivo .err
-								band = false; //regresa a estado inicial
 							}
 							else if(In.necesitaOper(An.regresaCodop(), listadeInst) && An.regresaOper().equalsIgnoreCase("NULL")) //necesita operando y no tiene operando
 							{
 								comando = An.describirError((byte)7,", Agregar Operando a la Instruccion");	//Ausencia de Operando en Codop
 								comando = "Linea " + cont + " " + comando;
 								ArcErr.escribir(comando);	//Escribe el error en el Archivo .err
-								band = false; //regresa a estado inicial
 							}
 							else	//no necesita operando y no lo tiene
 							{
@@ -305,24 +304,39 @@ public class Analizador
 								System.out.println(comando);	//Salida  de la linea a consola
 						
 								ArcIns.escribir(comando);	////Escritura de la linea en el archivo .inst
-						
-								band = false;  //regresar a estado inicial
 							}
 						}
-						else
+						else if(An.regresaCodop().equals("ORG"))	//Directiva ORG encontrada
+						{
+							if(!(An.regresaOper().equalsIgnoreCase("NULL"))) //Si contiene Operando
+							{
+								comando = cont+"	"+An.regresaEtq()+"	"+An.regresaCodop()+"	"+An.regresaOper();	//concatenacion de tokens
+								System.out.println(comando);	//Salida  de la linea a consola
+						
+								ArcIns.escribir(comando);	////Escritura de la linea en el archivo .inst
+							}
+							else //Ausencia de Operando
+							{
+								comando = An.describirError((byte)10,", Incluir la direccion en la Directiva");	//ORG sin Direccion
+								comando = "Linea " + cont + " " + comando;
+								ArcErr.escribir(comando);	//Escribe el error en el Archivo .err
+							}
+									
+						}
+						else	//No se encontro Codop
 						{
 							comando = An.describirError((byte)9,"");	//Codop Inexistente en el Tabop
 							comando = "Linea " + cont + " " + comando;
 							ArcErr.escribir(comando);	//Escribe el error en el Archivo .err
-							band = false; //regresa a estado inicial
 						}
 					}
 					
 					cont++;	//control del numero de linea
-					An.limpiarAnaliz();
+					band = false;	//Bandera en estado inicial
+					An.limpiarAnaliz();	//limpiar atributos del Analizador
 					Au.reiniciarAutomata();		//Reestablece los valores del automata
 				}
-				else
+				else //Directiva End encontrada
 				{
 					finEjecuccion = true;	//activa la bandera para dejar de leer el archivo
 					comando = cont+"	"+An.regresaEtq()+"	"+An.regresaCodop()+"	"+An.regresaOper();	//concatenacion de tokens
@@ -342,7 +356,7 @@ public class Analizador
 				}
 			}
 			
-			ArcAsm.cerrarLector();
+			ArcAsm.cerrarLector();	//cerrando el buffer del Archivo Asm
 			
 		}// fin try
 		catch (IOException e) 
