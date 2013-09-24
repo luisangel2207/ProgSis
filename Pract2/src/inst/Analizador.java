@@ -27,7 +27,7 @@ public class Analizador
 	}
 	public void ingresarCodop(String codOp)
 	{
-		codop = codOp;
+		codop = codOp.toUpperCase();
 	}
 	public void ingresarOperando(String operando)
 	{
@@ -276,37 +276,12 @@ public class Analizador
 				if(!Au.regresaEstEnd())		//Si el Codop aun no es la directica END
 				{
 					if(band && Au.regresaEstSinErr() && !Au.regresaEstErrDet())	//instruccion valida
-					{//Codigo de la prac2
+					{
 						if(ArbolDeInst.containsKey(An.regresaCodop()))	//Si el arbol contiene el Codop					
 						{
-							if(In.necesitaOper(An.regresaCodop(), listadeInst) && !An.regresaOper().equalsIgnoreCase("NULL")) //necesita operando y tiene operando
-							{
-								comando = cont+"	"+An.regresaEtq()+"	"+An.regresaCodop()+"	"+An.regresaOper()+"	"+ArbolDeInst.get(An.regresaCodop());	//concatenacion de tokens
-								System.out.println(comando);	//Salida  de la linea a consola
-						
-								ArcIns.escribir(comando);	////Escritura de la linea en el archivo .inst
-							}
-							else if(!In.necesitaOper(An.regresaCodop(), listadeInst) && !An.regresaOper().equalsIgnoreCase("NULL")) //no necesita operando y tiene operando
-							{
-								comando = An.describirError((byte)8,", retirar Operando de la instruccion"); //Codop con Operando innecesario
-								comando = "Linea " + cont + " " + comando;
-								ArcErr.escribir(comando);	//Escribe el error en el Archivo .err
-							}
-							else if(In.necesitaOper(An.regresaCodop(), listadeInst) && An.regresaOper().equalsIgnoreCase("NULL")) //necesita operando y no tiene operando
-							{
-								comando = An.describirError((byte)7,", Agregar Operando a la Instruccion");	//Ausencia de Operando en Codop
-								comando = "Linea " + cont + " " + comando;
-								ArcErr.escribir(comando);	//Escribe el error en el Archivo .err
-							}
-							else	//no necesita operando y no lo tiene
-							{
-								comando = cont+"	"+An.regresaEtq()+"	"+An.regresaCodop()+"	"+An.regresaOper()+"	"+ArbolDeInst.get(An.regresaCodop());	//concatenacion de tokens
-								System.out.println(comando);	//Salida  de la linea a consola
-						
-								ArcIns.escribir(comando);	////Escritura de la linea en el archivo .inst
-							}
+							Au.estadoValidaInst(In, An, listadeInst, ArbolDeInst, ArcIns, ArcErr, cont); //entra al Automata para validar Codop-Operando
 						}
-						else if(An.regresaCodop().equals("ORG"))	//Directiva ORG encontrada
+						else if(An.regresaCodop().equalsIgnoreCase("ORG"))	//Directiva ORG encontrada
 						{
 							if(!(An.regresaOper().equalsIgnoreCase("NULL"))) //Si contiene Operando
 							{
@@ -350,7 +325,6 @@ public class Analizador
 				if(!Au.regresaEstEnd())		//Si el codop End no se encontro
 				{
 					comando = An.describirError((byte)4,"verificar Codop");		//Falta de directiva End
-					comando = "Linea " + cont + " " + comando;
 					ArcErr.escribir(comando);	//Escribe el error en el Archivo .err
 					System.out.println("ERROR!! Directiva END no encontrada");	//Aviso de Error por consola
 				}

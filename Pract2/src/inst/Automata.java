@@ -2,6 +2,7 @@ package inst;
 
 import java.io.IOException;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 
 class Automata 
 {
@@ -282,6 +283,51 @@ class Automata
 			return false;	// hay errores en alguna validacion
 		else
 			return true;	//linea de codigo sin errores
+	}
+	
+	public void estadoValidaInst(Instruccion In,Analizador An,Instruccion[] listadeInst,TreeMap<String,String> ArbolDeInst,Archivo ArcIns,Archivo ArcErr,byte cont)
+	{
+		String comando;
+		if(In.necesitaOper(An.regresaCodop(), listadeInst) && !An.regresaOper().equalsIgnoreCase("NULL")) //necesita operando y tiene operando
+		{
+			comando = cont+"	"+An.regresaEtq()+"	"+An.regresaCodop()+"	"+An.regresaOper()+"	"+ArbolDeInst.get(An.regresaCodop());	//concatenacion de tokens
+			System.out.println(comando);	//Salida  de la linea a consola
+			try
+			{ArcIns.escribir(comando);}	////Escritura de la linea en el archivo .inst
+			
+			catch(IOException e)
+			{e.printStackTrace();}
+		}
+		else if(!In.necesitaOper(An.regresaCodop(), listadeInst) && !An.regresaOper().equalsIgnoreCase("NULL")) //no necesita operando y tiene operando
+		{
+			comando = An.describirError((byte)8,", retirar Operando de la instruccion"); //Codop con Operando innecesario
+			comando = "Linea " + cont + " " + comando;
+			try
+			{ArcErr.escribir(comando);}	//Escribe el error en el Archivo .err
+			
+			catch(IOException e)
+			{e.printStackTrace();}
+		}
+		else if(In.necesitaOper(An.regresaCodop(), listadeInst) && An.regresaOper().equalsIgnoreCase("NULL")) //necesita operando y no tiene operando
+		{
+			comando = An.describirError((byte)7,", Agregar Operando a la Instruccion");	//Ausencia de Operando en Codop
+			comando = "Linea " + cont + " " + comando;
+			try
+			{ArcErr.escribir(comando);}	//Escribe el error en el Archivo .err
+			
+			catch(IOException e)
+			{e.printStackTrace();}
+		}
+		else 	//no necesita operando y no lo tiene
+		{
+			comando = cont+"	"+An.regresaEtq()+"	"+An.regresaCodop()+"	"+An.regresaOper()+"	"+ArbolDeInst.get(An.regresaCodop());	//concatenacion de tokens
+			System.out.println(comando);	//Salida  de la linea a consola
+			try
+			{ArcIns.escribir(comando);}	////Escritura de la linea en el archivo .inst
+			catch(IOException e)
+			{e.printStackTrace();}
+		}
+	
 	}
 	
 	public void reiniciarAutomata()
