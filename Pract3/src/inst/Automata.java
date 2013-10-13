@@ -20,6 +20,7 @@ class Automata
 	protected boolean estIdx;
 	protected boolean estIncDec;
 	protected boolean estRegABD;
+	protected boolean estIdxVacio;
 	
 	public Automata()
 	{
@@ -37,6 +38,7 @@ class Automata
 		estIdx = false;
 		estIncDec = false;
 		estRegABD = false;
+		estIdxVacio = false;
 	}
 	
 	public void ingresaEstErr(boolean estado)
@@ -95,6 +97,10 @@ class Automata
 	{
 		estRegABD = estado;
 	}
+	public void ingresaEstIdxVacio(boolean estado)
+	{
+		estIdxVacio = estado;
+	}
 	
 	public boolean regresaEstEnd()
 	{
@@ -139,6 +145,10 @@ class Automata
 	public boolean regresaEstRegABD()
 	{
 		return estRegABD;
+	}
+	public boolean regresEstIdxVacio()
+	{
+		return estIdxVacio;
 	}
 	
 	public void inicia4Comandos(Analizador An,StringTokenizer token,Archivo ArcErr,String linea,byte cont)
@@ -425,16 +435,16 @@ class Automata
 		String comando;
 		String dir = ArbolDeInst.get(An.regresaCodop()); //direcc posibles del Codop actual
 		
-		if(An.regresaOper().startsWith("#") || Di.esDirOExtORel(An.regresaOper()))
+		if(An.regresaOper().startsWith("#") || (Di.esDirOExtORel(An.regresaOper()) && !An.regresaOper().contains(",")))
 			Di.direccConOper(An,Au,ArcErr,Di,dir,cont); //formato Inmediato,Dir,Ext y Rel
 		
-		else if(An.regresaOper().contains(","))
-		{
-			if(An.regresaOper().startsWith("[") && An.regresaOper().endsWith("]"))
-				Di.direccConOper(An,Au,ArcErr,Di,dir,cont); //formato Idx indirecto
-			else
-				Di.direccConOper(An, Au, ArcErr, Di, dir, cont); //formato Indexado
-		}
+		//else if(An.regresaOper().contains(","))
+		//{
+		else if(An.regresaOper().matches("\\[[^\\[][A-Za-z0-9]*,[+|-]?[A-Za-z]+[+|-]?\\]"))
+			Di.direccConOper(An,Au,ArcErr,Di,dir,cont); //formato Idx indirecto
+		else if(An.regresaOper().matches(",[+|-]?[a-zA-Z]+[+|-]?") || An.regresaOper().matches("[\\$|@|%|\\-]?[a-zA-Z0-9]+,[+|-]?[a-zA-Z]+[+|-]?")) //checar
+			Di.direccConOper(An, Au, ArcErr, Di, dir, cont); //formato Indexado
+		//}
 		
 		else if(An.validarOperEtq() == 0)
 			Di.direccConOperEtq(An,Au,ArcErr,dir,cont); //Formato Operando-Etiqueta
@@ -447,11 +457,12 @@ class Automata
 			comando = cont+"	"+An.regresaEtq()+"	"+An.regresaCodop()+"	"+An.regresaOper()+"	"+Di.regresaTipo();	//concatenacion de tokens
 			System.out.println(comando);	//Salida  de la linea a consola
 			try
-			{ArcIns.escribir(comando);}	////Escritura de la linea en el archivo .inst
+			{ArcIns.escribir(comando);}	//Escritura de la linea en el archivo .inst
 		
 			catch(IOException e)
 			{e.printStackTrace();}
 		}
+		
 	}
 	
 	public void reiniciarAutomata()
@@ -470,6 +481,7 @@ class Automata
 		estIdx = false;
 		estIncDec = false;
 		estRegABD = false;
+		estIdxVacio = false;
 	}
 
 }

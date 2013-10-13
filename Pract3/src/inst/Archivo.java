@@ -146,7 +146,7 @@ class Archivo
 	public void errorRegistInv(Analizador An,byte cont)
 	{
 		String comando;
-		comando = An.describirError((byte)15,", Registro PC no es valido con PRE/POS-INC/DEC"); //Formato invalido de Reg PC
+		comando = An.describirError((byte)15,", Verifique la sintaxis o validez del registro para ese Codop"); //Formato invalido de Reg PC
 		comando = "Linea " + cont + " " + comando;
 		
 		try

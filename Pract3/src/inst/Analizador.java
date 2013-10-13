@@ -154,6 +154,9 @@ public class Analizador
 			case 16:
 				tipo = "Error, Formato Invalido para cualquier Codop" + palabra;
 				break;
+			case 17:
+				tipo = "Error, Directiva END con Operando" + palabra;
+				break;
 		}
 		return tipo;
 	}
@@ -324,7 +327,7 @@ public class Analizador
 								comando = cont+"	"+An.regresaEtq()+"	"+An.regresaCodop()+"	"+An.regresaOper();	//concatenacion de tokens
 								System.out.println(comando);	//Salida  de la linea a consola
 						
-								ArcIns.escribir(comando);	////Escritura de la linea en el archivo .inst
+								ArcIns.escribir(comando);	//Escritura de la linea en el archivo .inst
 							}
 							else //Ausencia de Operando
 							{
@@ -349,10 +352,19 @@ public class Analizador
 				}
 				else //Directiva End encontrada
 				{
-					finEjecuccion = true;	//activa la bandera para dejar de leer el archivo
-					comando = cont+"	"+An.regresaEtq()+"	"+An.regresaCodop()+"	"+An.regresaOper();	//concatenacion de tokens
-					System.out.println(comando);	//Salida  de la linea a consola
-					ArcIns.escribir(comando);	//Escritura de la linea en el archivo .inst
+					if(An.regresaOper().equalsIgnoreCase("NULL"))
+					{
+						finEjecuccion = true;	//activa la bandera para dejar de leer el archivo
+						comando = cont+"	"+An.regresaEtq()+"	"+An.regresaCodop()+"	"+An.regresaOper();	//concatenacion de tokens
+						System.out.println(comando);	//Salida  de la linea a consola
+						ArcIns.escribir(comando);	//Escritura de la linea en el archivo .inst
+					}
+					else
+					{
+						comando = An.describirError((byte)17,", eliminar Oper de la Directiva");		//Directiva END con Oper
+						ArcErr.escribir(comando);	//Escribe el error en el Archivo .err
+					}
+						
 				}
 			}	//fin while
 			

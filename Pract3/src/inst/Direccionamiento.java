@@ -33,7 +33,7 @@ class Direccionamiento
 		return rango;
 	}
 	
-	public boolean esDirOExtORel(String oper)
+	public boolean esDirOExtORel(String oper) //Simbolo inicial valido para DIR,EXT y REL
 	{
 		return (oper.startsWith("$")||oper.startsWith("@")||oper.startsWith("%")||oper.startsWith("0")||
 				oper.startsWith("1")||oper.startsWith("2")||oper.startsWith("3")||oper.startsWith("4")||
@@ -64,13 +64,13 @@ class Direccionamiento
 	public void baseOctal(String baseOct,Analizador An,Automata Au,Archivo ArcErr,Direccionamiento Di, byte cont)
 	{
 		int rango = 0;
-		if(baseOct.matches("[0-7]+[0-7]*"))
+		if(baseOct.matches("[0-7]+[0-7]*")) //simbolos de base numerica validos
 		{
 			if(baseOct.startsWith(BASEOCT))
-				rango = complementoA2(baseOct,(byte)2);
+				rango = complementoA2(baseOct,(byte)2);		//numeros en formato complemento a 2
 			else
 			{
-				rango = Integer.parseInt(baseOct, 8);
+				rango = Integer.parseInt(baseOct, 8); //rango del numero Oct en Decimal
 			}
 			Di.ingresaRango(rango);
 		}
@@ -83,13 +83,13 @@ class Direccionamiento
 	public void baseBinaria(String baseBin,Analizador An,Automata Au,Archivo ArcErr,Direccionamiento Di, byte cont)
 	{
 		int rango = 0;
-		if(baseBin.matches("[01]+[01]*"))
+		if(baseBin.matches("[01]+[01]*")) //simbolos de base numerica validos
 		{
 			if(baseBin.startsWith(BASEBIN))
-				rango = complementoA2(baseBin,(byte) 3);
+				rango = complementoA2(baseBin,(byte) 3);  //numeros en formato complemento a 2
 			else
 			{
-				rango = Integer.parseInt(baseBin, 2);
+				rango = Integer.parseInt(baseBin, 2);  //rango del numero Bin en Decimal
 			}
 			Di.ingresaRango(rango);
 		}
@@ -102,9 +102,9 @@ class Direccionamiento
 	public void baseDecimal(String baseDec,Analizador An,Automata Au,Archivo ArcErr,Direccionamiento Di,byte cont)
 	{
 		int rango = 0;
-		if(baseDec.matches("[-]*[0-9]+"))
+		if(baseDec.matches("[-]*[0-9]+"))  //Simbolos de base numerica validos
 		{
-			rango = Integer.parseInt(baseDec);
+			rango = Integer.parseInt(baseDec); //rango del numero Decimal
 			Di.ingresaRango(rango);
 		}
 		else
@@ -127,7 +127,7 @@ class Direccionamiento
 			valor = Integer.parseInt(base, 8); //valor decimal del numero negativo Oct
 			break;
 		case 3:
-			valor = Integer.parseInt(base, 2); //valor decimal del numero negativo Bin
+			//valor = Integer.parseInt(base, 2); //valor decimal del numero negativo Bin
 			break;
 		}
 		aux = Integer.toBinaryString(valor); //cadena con el valor en binario
@@ -147,6 +147,8 @@ class Direccionamiento
 				break;
 			}
 		}
+		if(aux2.length() == 0)
+			return -1;
 		valor = Integer.parseInt(aux2,2);	//rango del numero
 		if(valor == 0)	// casos especiales del Complemento a 2
 		{
@@ -173,7 +175,7 @@ class Direccionamiento
 		while(st.hasMoreTokens())
 		{
 			Inh = st.nextToken();
-			if(Inh.equalsIgnoreCase("INH"))
+			if(Inh.equalsIgnoreCase("INH"))  //Si se encuentra el Direcc
 			{
 				ingresaTipo(Inh);
 				Au.ingresaEstDirValido(true); //Direcc valido para este Codop
@@ -210,15 +212,26 @@ class Direccionamiento
 				if(An.regresaOper().startsWith("[") && An.regresaOper().endsWith("]"))
 				{
 					StringTokenizer sepIdxInd = new StringTokenizer(An.regresaOper(),",");
-					base = sepIdxInd.nextToken().substring(1);
-					reg = sepIdxInd.nextToken().toUpperCase();
-					reg = reg.substring(0,reg.length()-1);
+					if(sepIdxInd.countTokens() == 2)
+					{
+						base = sepIdxInd.nextToken().substring(1);
+						reg = sepIdxInd.nextToken().toUpperCase();
+						reg = reg.substring(0,reg.length()-1);
+					}
 				}
 				else
 				{
 					StringTokenizer sepIdx = new StringTokenizer(An.regresaOper(),",");
-					base = sepIdx.nextToken();
-					reg = sepIdx.nextToken().toUpperCase();
+					if(sepIdx.countTokens() == 2)
+					{
+						base = sepIdx.nextToken();
+						reg = sepIdx.nextToken().toUpperCase();
+					}
+					else if(sepIdx.countTokens() == 1)
+					{
+						base = "|";
+						reg = sepIdx.nextToken().toUpperCase();
+					}
 				}
 			}
 			else if(esDirOExtORel(An.regresaOper()))
@@ -255,6 +268,10 @@ class Direccionamiento
 		case 'b':
 		case 'd':
 			break;
+		case '|':
+			base = "";
+			Au.ingresaEstIdxVacio(true);
+			break;
 		default:
 			ArcErr.errorSimboloDeBase(An,cont);
 			Au.ingresaEstErrNum(true);
@@ -277,6 +294,8 @@ class Direccionamiento
 							
 							rangoIdxIndirecto(An,Au,ArcErr,Di,direccs,cont);
 						}
+						else
+							ArcErr.errorRegistInv(An,cont); //Registro en Operando Inv para ese Direcc
 					}
 					else
 					{
@@ -372,6 +391,8 @@ class Direccionamiento
 		}
 		if(Di.regresaRango() < -32768 || Di.regresaRango() > 65535)
 			ArcErr.errorDeRango(An, cont); //Rango invalido para ese Direcc
+		else if(Di.regresaRango() > -32768 && Di.regresaRango() < 65535 && !Au.regresaEstImm() && direccs.contains("IMM8"))
+			ArcErr.errorDeRango(An, cont);
 		else if(!Au.regresaEstImm())
 			ArcErr.errorFormatoInv(An,cont);	//Oper invalido para Codop actual
 	}
@@ -460,12 +481,37 @@ class Direccionamiento
 		}
 		if(Di.regresaRango() < -32768 || Di.regresaRango() > 65535)
 			ArcErr.errorDeRango(An, cont); //Rango invalido para ese Direcc
+		else if(Di.regresaRango() > -32768 && Di.regresaRango() < 65535 && !Au.regresaEstRel() && (direccs.contains("REL8") || direccs.contains("REL9")))
+			ArcErr.errorDeRango(An, cont);
+		else if(Di.regresaRango() > -32768 && Di.regresaRango() < 65535 && !Au.regresaEstDir() && direccs.contains("DIR"))
+			ArcErr.errorDeRango(An, cont);
 		else if(!Au.regresaEstDir() && !Au.regresaEstRel())
 			ArcErr.errorFormatoInv(An,cont);	//Oper invalido para Codop actual
 	}
 	
 	public void rangoIdxIdx1Idx2(Analizador An,Automata Au,Archivo ArcErr,Direccionamiento Di,String direccs,String reg,byte cont)
 	{
+		if(Au.regresEstIdxVacio())
+		{
+			if(!(reg.startsWith("+")||reg.startsWith("-")||reg.endsWith("+")||reg.endsWith("-")))
+			{
+				String IdxReg = "";
+				StringTokenizer st = new StringTokenizer(direccs,",");
+				while(st.hasMoreTokens())
+				{
+					IdxReg = st.nextToken();
+					if(IdxReg.equalsIgnoreCase("IDX"))
+					{
+						ingresaTipo(IdxReg);
+						Au.ingresaEstDirValido(true);
+						Au.ingresaEstIdx(true);
+						break;
+					}
+				}
+			}
+			else
+				Au.ingresaEstIncDec(true);
+		}
 		if(Au.regresaEstRegABD()) //IDX con Registro
 		{
 			if(!(reg.startsWith("+")||reg.startsWith("-")||reg.endsWith("+")||reg.endsWith("-")))
@@ -571,14 +617,42 @@ class Direccionamiento
 			else
 				Au.ingresaEstIncDec(true);
 		}
-		if(Di.regresaRango() < -32768 || Di.regresaRango() > 65535)
-			ArcErr.errorDeRango(An, cont); //Rango invalido para ese Direcc
-		else if(!Au.regresaEstIdx())
-			ArcErr.errorFormatoInv(An,cont);	//Oper invalido para Codop actual
+		if(!Au.regresaEstIdx())
+		{
+			if(Au.regresaEstIncDec() && (Di.regresaRango() < 1 || Di.regresaRango() > 8))
+				ArcErr.errorDeRango(An, cont);
+			else if(Di.regresaRango() < 0 || Di.regresaRango() > 65535)
+			{
+				if(Di.regresaRango() < -16 && direccs.contains("IDX"))
+					ArcErr.errorDeRango(An, cont); //Rango invalido para ese Direcc
+				else if(Di.regresaRango() < -256 && direccs.contains("IDX1"))
+					ArcErr.errorDeRango(An, cont);
+				else if(direccs.contains("IDX2"))
+					ArcErr.errorDeRango(An, cont);
+			}
+			else
+				ArcErr.errorFormatoInv(An,cont);	//Oper invalido para Codop actual
+		}
 	}
 	
 	public void rangoIdxIndirecto(Analizador An,Automata Au,Archivo ArcErr,Direccionamiento Di,String direccs,byte cont)
 	{
+		if(Au.regresEstIdxVacio())
+		{
+			String Idx2Ind = "";
+			StringTokenizer st = new StringTokenizer(direccs,",");
+			while(st.hasMoreTokens())
+			{
+				Idx2Ind = st.nextToken();
+				if(Idx2Ind.equalsIgnoreCase("[IDX2]"))
+				{
+					ingresaTipo(Idx2Ind);
+					Au.ingresaEstDirValido(true);
+					Au.ingresaEstIdx(true);
+					break;
+				}
+			}
+		}
 		if(Au.regresaEstRegABD())
 		{
 			String DIdxInd = "";
@@ -615,7 +689,7 @@ class Direccionamiento
 				}
 			}
 		}
-		if(Di.regresaRango() < -32768 || Di.regresaRango() > 65535)
+		if(Di.regresaRango() < 0 || Di.regresaRango() > 65535)
 			ArcErr.errorDeRango(An, cont); //Rango invalido para ese Direcc
 		else if(!Au.regresaEstIdx())
 			ArcErr.errorFormatoInv(An,cont);	//Oper invalido para Codop actual
