@@ -166,4 +166,16 @@ class Archivo
 		catch(IOException e)
 		{e.printStackTrace();}
 	}
+	
+	public void errorOperEtq(Analizador An, byte cont) //completar
+	{
+		String comando;
+		comando = An.describirError((byte)18,", Verifique los formatos validos para etiquetas"); //Oper Invalido para todo codop
+		comando = "Linea " + cont + " " + comando;
+		
+		try
+		{escribir(comando);}	//Escribe el error en el Archivo .err
+		catch(IOException e)
+		{e.printStackTrace();}
+	}
 }

@@ -59,7 +59,7 @@ public class Analizador
 		}
 		else
 		{
-			if(!(etq.matches("[a-zA-z]+[a-zA-z0-9_]*")))	//validar sintaxis
+			if(!(etq.matches("[a-zA-Z]+[a-zA-Z0-9_]*")))	//validar sintaxis
 				return 2;	//Devuelve error de tipo 2
 		}
 		return 0;		//No hay errores en la etiqueta
@@ -156,6 +156,9 @@ public class Analizador
 				break;
 			case 17:
 				tipo = "Error, Directiva END con Operando" + palabra;
+				break;
+			case 18:
+				tipo = "Error, Etiqueta en Oper con formato invalido" + palabra;
 				break;
 		}
 		return tipo;

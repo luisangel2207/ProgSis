@@ -438,16 +438,18 @@ class Automata
 		if(An.regresaOper().startsWith("#") || (Di.esDirOExtORel(An.regresaOper()) && !An.regresaOper().contains(",")))
 			Di.direccConOper(An,Au,ArcErr,Di,dir,cont); //formato Inmediato,Dir,Ext y Rel
 		
-		//else if(An.regresaOper().contains(","))
-		//{
 		else if(An.regresaOper().matches("\\[[^\\[][A-Za-z0-9]*,[+|-]?[A-Za-z]+[+|-]?\\]"))
 			Di.direccConOper(An,Au,ArcErr,Di,dir,cont); //formato Idx indirecto
 		else if(An.regresaOper().matches(",[+|-]?[a-zA-Z]+[+|-]?") || An.regresaOper().matches("[\\$|@|%|\\-]?[a-zA-Z0-9]+,[+|-]?[a-zA-Z]+[+|-]?")) //checar
 			Di.direccConOper(An, Au, ArcErr, Di, dir, cont); //formato Indexado
-		//}
 		
-		else if(An.validarOperEtq() == 0)
-			Di.direccConOperEtq(An,Au,ArcErr,dir,cont); //Formato Operando-Etiqueta
+		else if(An.regresaOper().matches("[a-zA-z]+[a-zA-z0-9_]*")) //Sintaxis valida para un Operando-Etiqueta
+		{
+			if(An.validarOperEtq() == 0)
+				Di.direccConOperEtq(An,Au,ArcErr,dir,cont); //Formato Operando-Etiqueta
+			else
+				ArcErr.errorOperEtq(An, cont); //error en longitud del Operando-Etiqueta
+		}
 		
 		else
 			ArcErr.errorOperInv(An,cont); // Oper invalido para cualquier Codop
