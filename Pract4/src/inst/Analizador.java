@@ -305,6 +305,33 @@ public class Analizador
 		return comando;		
 	}
 	
+	public String cadenaEntreComillas(String linea)
+	{
+		String cad;
+		StringTokenizer st = new StringTokenizer(linea);
+		linea = "";
+		
+		while(st.hasMoreTokens())
+		{
+			cad = st.nextToken(); //Se almacena el Token actual
+			if(cad.startsWith("\"")) //si el token comienza con comillas
+			{
+				while(!(cad.startsWith("\"") && cad.endsWith("\"")) && st.hasMoreElements()) //mientras el token no este entre comillas y existan mas tokens
+				{
+					cad = cad + " " + st.nextToken(); //concatenacion del contenido del token entre comillas
+				}
+				if(cad.matches("\".*\"")) //si cumple con la sintaxis
+				{
+					cad = cad.replace(" ", "|"); //se remplaza el espacio por un separador especial
+				}
+				linea = linea + " " + cad; //concatenacion del token en la linea
+			}
+			else
+				linea = linea + " " + cad + " ";
+		}
+		return linea;
+	}
+	
 	public boolean espacioONull(String comando)
 	{
 		if((comando.compareTo(" ") == 0)||(comando.compareTo("\t") ==0) || (comando.compareToIgnoreCase("null") == 0))
@@ -409,14 +436,13 @@ public class Analizador
 				else
 					comando = linea;	//linea sin comentarios
 				
+				if(comando.contains("\""))
+					comando = An.cadenaEntreComillas(comando); //localiza la cadena entre comillas y la concatena con un separador especial
+				
 				if(An.espacioONull(comando))
 					continue;	//salta a la sig. iteracion si solo hay espacios,tabuladores o comentarios en la linea
 				else
 				{
-					if(comando.contains("\""))
-					{
-						
-					}
 					StringTokenizer token = new StringTokenizer(comando);
 					tokens = (byte)token.countTokens();		//numero de tokens en la linea leida
 					

@@ -820,6 +820,9 @@ class Automata
 			{
 				if(An.regresaOper().matches("\"[^\"]*\""))
 				{
+					if(An.regresaOper().contains("|"))
+						An.ingresarOperando(An.regresaOper().replace("|"," ")); //se remplaza el separador especial por el espacio
+					
 					String cad = An.regresaOper().substring(1, An.regresaOper().length()-1);
 					
 					comando = cont+"	"+Analizador.FormatoContLoc()+"	"+An.regresaEtq()+"	"+An.regresaCodop()+"	"+An.regresaOper();	//concatenacion de tokens
