@@ -20,7 +20,7 @@ public class Analizador
 	private Vector<String> listaDeEtiq;
 	private HashSet<String> ConjDeOperEtq;
 	
-	//Constructor
+	//Constructor Hola jaño
 	public Analizador()
 	{
 		etq = "";
