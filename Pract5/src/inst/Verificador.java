@@ -4,9 +4,28 @@ import java.io.IOException;
 import java.util.StringTokenizer;
 import java.util.LinkedList;
 import java.util.TreeMap;
+import java.util.HashSet;
 
 class Verificador 
 {	
+	private String formComp2;
+	
+	public void ingresaComp2(String comp2)
+	{
+		formComp2 = comp2;
+	}
+	
+	public String regresaComp2()
+	{
+		return formComp2;
+	}
+	
+	public boolean esNumNeg(String oper)
+	{
+		return (oper.startsWith("$F") || oper.startsWith("$f") || oper.startsWith("@7") 
+					|| oper.startsWith("%1") || oper.startsWith("-"));
+	}
+	
 	public LinkedList<String> respaldo(Archivo ArcIns)
 	{
 		String linea;
@@ -28,6 +47,9 @@ class Verificador
 		catch(IOException e)
 		{e.printStackTrace();}
 		
+		HashSet<String> auxlist = new HashSet<String>();
+		HashSet<String> auxconj = new HashSet<String>();
+		
 		while(!cola.isEmpty())
 		{
 			String[] campos = new String[10];
@@ -41,13 +63,18 @@ class Verificador
 			{
 				if(campos[5].equalsIgnoreCase("EXT")) //si es de tipo EXT
 				{
-					if(!An.contieneEtqLista(campos[4])) //si es una Etq que no existe
+					if(campos[4].matches("[a-zA-z]+[a-zA-z0-9_]*") && !An.contieneEtqLista(campos[4])) //si es una Etq que no existe
 					{
 						ArcErr.errorOpEtqInv(An,campos[0]); // Oper no existe como Etq
 						continue; //Se salta ala siguiente linea
 					}
+					if(campos[4].matches("[a-zA-z]+[a-zA-z0-9_]*"))
+						auxconj.add(campos[4]); //afrefar Oper-Etq a lista auxiliar
 				}	
 			}
+			if(!campos[2].equalsIgnoreCase("NULL"))
+				auxlist.add(campos[2]); //agregar Etq a lista auxiliar
+			
 			campos[1] = Analizador.FormatoContLoc(); //Se da formato al ContLoc
 			String linea = "";
 			for(byte x = 0;x < campos.length;x++) //se concatena los elementos de la linea
@@ -153,7 +180,8 @@ class Verificador
 				}
 				
 			}
-		}	
+		}
+		An.actualizarListYConj(auxlist, auxconj); //actualizamos las Etiquetas validas
 	}
 	
 	public int conversor(String oper)
@@ -202,7 +230,7 @@ class Verificador
 			}
 		}
 	}
-	public String obtenerCodMaq(String codop,String direcc,String oper,Instruccion[] listadeInst)
+	public String obtenerCodMaq(String codop,String direcc,String oper,Direccionamiento Di,Instruccion[] listadeInst)
 	{
 		String codmaq = "";
 		for(int i = 0; i<listadeInst.length;i++)
@@ -218,36 +246,72 @@ class Verificador
 					switch(listadeInst[i].regresaBPC()) //segun el numero de bytes por calcular..
 					{
 					case 1: //1 byte
-						codoper = conversor(oper); //encontramos el valor
-						codhex = Integer.toHexString(codoper); //lo pasamos a base HEX en forma de cadena
-						codhex = codhex.toUpperCase(); 
-						if(codhex.length() == 1) //si su longitud es menor a un byte
-							codmaq = codmaq + "0" + codhex; //se complementa con un 0 y se concatena con el CodMaq ya obtenido
-						else
+						if(oper.startsWith("$F")||oper.startsWith("@7")||oper.startsWith("%1")|| oper.startsWith("-")) //Si es un numero negativo
+						{
+							if(oper.startsWith("$F")) //negativo HEX
+								codoper = Di.complementoA2(oper.substring(1),(byte)1);
+							else if(oper.startsWith("@7")) //megativo OCT
+								codoper = Di.complementoA2(oper.substring(1),(byte)2);
+							else if(oper.startsWith("%1")) //negativo BIN
+								codoper = Di.complementoA2(oper.substring(1), (byte)3);
+							else //negativo DEC
+								codoper = Integer.parseInt(oper);
+							codhex = Integer.toHexString(codoper); //lo pasamos a base HEX en forma de cadena
+							codhex = codhex.toUpperCase(); 
+							codhex = codhex.substring(codhex.length()-2,codhex.length());
 							codmaq = codmaq + codhex; //se concatena CodMaq con el valor de los bytes por calcular
+						}
+						else
+						{
+							codoper = conversor(oper); //encontramos el valor
+							codhex = Integer.toHexString(codoper); //lo pasamos a base HEX en forma de cadena
+							codhex = codhex.toUpperCase(); 
+							if(codhex.length() == 1) //si su longitud es menor a un byte
+								codmaq = codmaq + "0" + codhex; //se complementa con un 0 y se concatena con el CodMaq ya obtenido
+							else
+								codmaq = codmaq + codhex; //se concatena CodMaq con el valor de los bytes por calcular
+						}
 						break;
 					case 2: //2 bytes
 						if(oper.matches("[a-zA-z]+[a-zA-z0-9_]*"))
 							return codmaq;
 						else
 						{
-							codoper = conversor(oper);
-							codhex = Integer.toHexString(codoper);
-							codhex = codhex.toUpperCase();
-							switch(codhex.length())
+							if(oper.startsWith("$F")||oper.startsWith("@7")||oper.startsWith("%1")|| oper.startsWith("-"))
 							{
-							case 1:
-								codmaq = codmaq + "000" + codhex;
-								break;
-							case 2:
-								codmaq = codmaq + "00" + codhex;
-								break;
-							case 3:
-								codmaq = codmaq + "0" + codhex;
-								break;
-							case 4:
-								codmaq = codmaq + codhex;
-								break;
+								if(oper.startsWith("$F"))
+									codoper = Di.complementoA2(oper.substring(1),(byte)1);
+								else if(oper.startsWith("@7"))
+									codoper = Di.complementoA2(oper.substring(1),(byte)2);
+								else if(oper.startsWith("%1"))
+									codoper = Di.complementoA2(oper.substring(1), (byte)3);
+								else
+									codoper = Integer.parseInt(oper);
+								codhex = Integer.toHexString(codoper); //lo pasamos a base HEX en forma de cadena
+								codhex = codhex.toUpperCase(); 
+								codhex = codhex.substring(codhex.length()-4,codhex.length());
+								codmaq = codmaq + codhex; //se concatena CodMaq con el valor de los bytes por calcular
+							}
+							else
+							{
+								codoper = conversor(oper);
+								codhex = Integer.toHexString(codoper);
+								codhex = codhex.toUpperCase();
+								switch(codhex.length())
+								{
+								case 1:
+									codmaq = codmaq + "000" + codhex;
+									break;
+								case 2:
+									codmaq = codmaq + "00" + codhex;
+									break;
+								case 3:
+									codmaq = codmaq + "0" + codhex;
+									break;
+								case 4:
+									codmaq = codmaq + codhex;
+									break;
+								}
 							}
 						}
 						break;
@@ -327,4 +391,5 @@ class Verificador
 		}
 		return codmaq;
 	}
+	
 }

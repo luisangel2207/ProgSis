@@ -281,4 +281,15 @@ class Archivo
 		catch(IOException e)
 		{e.printStackTrace();}
 	}
+	
+	public void errorVerifPasoDos(Analizador An)
+	{
+		String comando;
+		comando = An.describirError((byte)25,", Imposible seguir al Paso 2"); //Errores en el Archivo Inst
+		
+		try
+		{escribir(comando);}	//Escribe el error en el Archivo .err
+		catch(IOException e)
+		{e.printStackTrace();}
+	}
 }

@@ -23,6 +23,7 @@ class Automata
 	protected boolean estIdxVacio;
 	protected boolean estOrgAct;
 	protected boolean estOperEtq;
+	protected boolean estInstConErr;
 	
 	public Automata()
 	{
@@ -43,6 +44,7 @@ class Automata
 		estIdxVacio = false;
 		estOrgAct = false;
 		estOperEtq = false;
+		estInstConErr = false;
 	}
 	
 	public void ingresaEstErr(boolean estado)
@@ -113,6 +115,10 @@ class Automata
 	{
 		estOperEtq = estado;
 	}
+	public void ingresaEstInstConErr(boolean estado)
+	{
+		estInstConErr = estado;
+	}
 	
 	public boolean regresaEstEnd()
 	{
@@ -169,6 +175,10 @@ class Automata
 	public boolean regresaEstOperEtq()
 	{
 		return estOperEtq;
+	}
+	public boolean regresaEstInstConErr()
+	{
+		return estInstConErr;
 	}
 	
 	public void inicia4Comandos(Analizador An,StringTokenizer token,Archivo ArcErr,String linea,byte cont)

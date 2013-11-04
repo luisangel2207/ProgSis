@@ -20,7 +20,7 @@ public class Analizador
 	private Vector<String> listaDeEtiq;
 	private HashSet<String> ConjDeOperEtq;
 	
-	//Constructor Hola jaño
+	//Constructor 
 	public Analizador()
 	{
 		etq = "";
@@ -65,9 +65,24 @@ public class Analizador
 		else
 			return false;
 	}
+	public void quitarEtqAlista(String etq)
+	{
+		listaDeEtiq.remove(etq);
+	}
 	public void agregarOpEtqAConj(String oper)
 	{
 		ConjDeOperEtq.add(oper);
+	}
+	public HashSet<String> regresaConjOpEtq()
+	{
+		return ConjDeOperEtq;
+	}
+	public void actualizarListYConj(HashSet<String>auxlist, HashSet<String>auxconj)
+	{
+		listaDeEtiq.clear();
+		listaDeEtiq.addAll(auxlist);
+		ConjDeOperEtq.clear();
+		ConjDeOperEtq.addAll(auxconj);
 	}
 	public boolean existenTodasEtq()
 	{
@@ -292,6 +307,9 @@ public class Analizador
 				break;
 			case 24:
 				tipo = "Error, Operando-Etiqueta no se encuentra en ninguna Etq" +  palabra;
+				break;
+			case 25:
+				tipo = "Error, Archivo Inst contiene Oper-Etq Invalidos" + palabra;
 				break;
 		}
 		return tipo;
@@ -538,8 +556,9 @@ public class Analizador
 			ArcAsm.cerrarLector();	//cerrando el buffer del Archivo Asm
 			
 			//Verificacion para Paso 2 del Ensamblador
-			if(!An.existenTodasEtq()) //Si se encuentran Op-Etq que no esten como Etq
+			while(!An.existenTodasEtq()) //Mientras se encuentran Op-Etq que no esten como Etq
 			{
+				Au.ingresaEstInstConErr(true); //bandera que impide pasar al paso 2
 				LinkedList<String> tmp = new LinkedList<String>(); //creamos una cola temporal
 				Verificador Ve = new Verificador(); //creamos un Objeto Verificador
 				tmp = Ve.respaldo(ArcIns); //Guardamos el contenido del Archivo Inst
@@ -549,6 +568,7 @@ public class Analizador
 				ArcTds.borrarArchivo(); //borramos el TDS
 				try
 				{
+					encabezado = "ETIQ	VALOR";
 					ArcTds.escribir(encabezado);
 					encabezado = "LISTA DE ERRORES, ENSAMBLADOR DE DOS PASOS";  //Encabezados
 					ArcErr.escribir(encabezado);
@@ -557,61 +577,66 @@ public class Analizador
 				{e.printStackTrace();}
 					
 				Ve.corregirEtqs(An,ArcIns,ArcErr,ArcTds,listadeInst,ArbolDeInst,tmp); //se eliminan todos los errores por etiquetas que no existen
+				
 			}
 			//Paso 2 del Ensamblador
-			LinkedList<String> tmp = new LinkedList<String>(); //creamos un respaldo del Archivo Inst
-			Verificador Ve = new Verificador(); //creamos un Objeto Verificador
-			tmp = Ve.respaldo(ArcIns); //guardamos en una cola las lineas del Archivo Inst
-			
-			ArcIns.cerrarLector(); //cerramos el buffer
-			ArcIns.borrarArchivo(); //borramos el Archivo Inst
-			TreeMap<String,String> arbolDeEtq = new TreeMap<String,String>(); //Se crea un Objeto Arbol
-			In.crearArbolDeEtqs(arbolDeEtq,ArcTds); //se llena el arbol clave-valor con las lineas del Archivo Tds
-			
-			ArcIns.escribir(tmp.removeFirst() + "	" + "CODMAQ"); //Se escribe el nuevo encabezado del Archivo Inst
-			while(!tmp.isEmpty()) //mientras la pila no este vacia
+			if(!Au.regresaEstInstConErr()) //Si no tiene errores el Archivo Inst
 			{
-				linea = tmp.removeFirst(); //se guarda y quita la linea del frente de la cola
-				Vector<String> elemento = new Vector<String>();
-				StringTokenizer st = new StringTokenizer(linea);
-				while(st.hasMoreTokens())
-					elemento.add(st.nextToken()); //guardamos cada elemento de la linea actual en el Vector
-				if(ArbolDeInst.containsKey(elemento.get(3))) //Si es un Codop del Tabop
+				LinkedList<String> tmp = new LinkedList<String>(); //creamos un respaldo del Archivo Inst
+				Verificador Ve = new Verificador(); //creamos un Objeto Verificador
+				tmp = Ve.respaldo(ArcIns); //guardamos en una cola las lineas del Archivo Inst
+				
+				ArcIns.cerrarLector(); //cerramos el buffer
+				ArcIns.borrarArchivo(); //borramos el Archivo Inst
+				TreeMap<String,String> arbolDeEtq = new TreeMap<String,String>(); //Se crea un Objeto Arbol
+				In.crearArbolDeEtqs(arbolDeEtq,ArcTds); //se llena el arbol clave-valor con las lineas del Archivo Tds
+				
+				ArcIns.escribir(tmp.removeFirst() + "	" + "CODMAQ"); //Se escribe el nuevo encabezado del Archivo Inst
+				while(!tmp.isEmpty()) //mientras la pila no este vacia
 				{
-					if(elemento.get(5).equalsIgnoreCase("INH")) //Direccionamiento INH
+					linea = tmp.removeFirst(); //se guarda y quita la linea del frente de la cola
+					Vector<String> elemento = new Vector<String>();
+					StringTokenizer st = new StringTokenizer(linea);
+					while(st.hasMoreTokens())
+						elemento.add(st.nextToken()); //guardamos cada elemento de la linea actual en el Vector
+					if(ArbolDeInst.containsKey(elemento.get(3))) //Si es un Codop del Tabop
 					{
-						String CodMaq = Ve.obtenerCodMaq(elemento.get(3), elemento.get(5),elemento.get(4), listadeInst); //Se obtiene el CodMaq
-						linea = linea + "	" + CodMaq; //se concatena con la linea actual
-					}
-					else if(elemento.get(5).startsWith("IMM")) //Direccionamiento IMM, IMM8 y IMM16
-					{
-						String CodMaq = Ve.obtenerCodMaq(elemento.get(3), elemento.get(5),elemento.get(4).substring(1), listadeInst); //Se obtiene el CodMaq
-						linea = linea + "	" + CodMaq; //Se concatena con la linea actual
-					}
-					else if(elemento.get(5).equalsIgnoreCase("DIR")) //Direccionamiento DIR
-					{
-						String CodMaq = Ve.obtenerCodMaq(elemento.get(3), elemento.get(5),elemento.get(4), listadeInst); //Se obtiene el CodMaq
-						linea = linea + "	" + CodMaq; //se concatena con la linea actual
-					}
-					else if(elemento.get(5).equalsIgnoreCase("EXT")) //Direccionamiento EXT
-					{
-						if(elemento.get(4).matches("[a-zA-z]+[a-zA-z0-9_]*")) //Si el Oper es una Etq
+						if(elemento.get(5).equalsIgnoreCase("INH")) //Direccionamiento INH
 						{
-							String CodMaq = arbolDeEtq.get(elemento.get(4)); //Se obtiene el valor que le corresponde al Oper segun el Archivo Tds
-							CodMaq = Ve.obtenerCodMaq(elemento.get(3),elemento.get(5),elemento.get(4), listadeInst) + CodMaq; //se concatena el CodMaq con el valor obtenido
+							String CodMaq = Ve.obtenerCodMaq(elemento.get(3), elemento.get(5),elemento.get(4),Di, listadeInst); //Se obtiene el CodMaq
 							linea = linea + "	" + CodMaq; //se concatena con la linea actual
 						}
-						else //Si se trata de un valor
+						else if(elemento.get(5).startsWith("IMM")) //Direccionamiento IMM, IMM8 y IMM16
 						{
-							String CodMaq = Ve.obtenerCodMaq(elemento.get(3), elemento.get(5),elemento.get(4), listadeInst); //Se obtiene el CodMaq
+							String CodMaq = Ve.obtenerCodMaq(elemento.get(3), elemento.get(5),elemento.get(4).substring(1),Di, listadeInst); //Se obtiene el CodMaq
 							linea = linea + "	" + CodMaq; //Se concatena con la linea actual
 						}
+						else if(elemento.get(5).equalsIgnoreCase("DIR")) //Direccionamiento DIR
+						{
+							String CodMaq = Ve.obtenerCodMaq(elemento.get(3), elemento.get(5),elemento.get(4),Di, listadeInst); //Se obtiene el CodMaq
+							linea = linea + "	" + CodMaq; //se concatena con la linea actual
+						}
+						else if(elemento.get(5).equalsIgnoreCase("EXT")) //Direccionamiento EXT
+						{
+							if(elemento.get(4).matches("[a-zA-z]+[a-zA-z0-9_]*")) //Si el Oper es una Etq
+							{
+								String CodMaq = arbolDeEtq.get(elemento.get(4)); //Se obtiene el valor que le corresponde al Oper segun el Archivo Tds
+								CodMaq = Ve.obtenerCodMaq(elemento.get(3),elemento.get(5),elemento.get(4),Di, listadeInst) + CodMaq; //se concatena el CodMaq con el valor obtenido
+								linea = linea + "	" + CodMaq; //se concatena con la linea actual
+							}
+							else //Si se trata de un valor
+							{
+								String CodMaq = Ve.obtenerCodMaq(elemento.get(3), elemento.get(5),elemento.get(4),Di, listadeInst); //Se obtiene el CodMaq
+								linea = linea + "	" + CodMaq; //Se concatena con la linea actual
+							}
+						}
 					}
+					
+					ArcIns.escribir(linea); //Despues de encontrar y concatenar el CodMaq, se escribe en el Archivo Inst
 				}
-				
-				ArcIns.escribir(linea); //Despues de encontrar y concatenar el CodMaq, se escribe en el Archivo Inst
 			}
-			
+			else
+				ArcErr.errorVerifPasoDos(An); //Etq-Oper Invalidas en Archivo Inst
 		}// fin try
 		catch (IOException e) 
 		{	

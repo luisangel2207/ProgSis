@@ -127,7 +127,7 @@ class Direccionamiento
 			valor = Integer.parseInt(base, 8); //valor decimal del numero negativo Oct
 			break;
 		case 3:
-			//valor = Integer.parseInt(base, 2); //valor decimal del numero negativo Bin
+			valor = Integer.parseInt(base, 2); //valor decimal del numero negativo Bin
 			break;
 		}
 		aux = Integer.toBinaryString(valor); //cadena con el valor en binario
