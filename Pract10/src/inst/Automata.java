@@ -191,7 +191,7 @@ class Automata
 		return estDespInval;
 	}
 	
-	public void inicia4Comandos(Analizador An,StringTokenizer token,Archivo ArcErr,String linea,byte cont)
+	public void inicia4Comandos(Analizador An,StringTokenizer token,Archivo ArcErr,String linea,short cont)
 	{
 		An.ingresarEtiqueta(token.nextToken());
 		An.ingresarCodop(token.nextToken());		//Ingresa los atributos correspondientes
@@ -226,7 +226,7 @@ class Automata
 			
 	}
 	
-	public void inicia3Comandos(Analizador An,StringTokenizer token,Archivo ArcErr,String linea,byte cont)
+	public void inicia3Comandos(Analizador An,StringTokenizer token,Archivo ArcErr,String linea,short cont)
 	{
 		An.ingresarEtiqueta(token.nextToken());
 		An.ingresarCodop(token.nextToken());
@@ -259,7 +259,7 @@ class Automata
 			continua2Comandos(An,ArcErr,linea,cont);	//transicion al estado de 2 comandos detectados	
 	}
 	
-	public void inicia2Comandos(Analizador An,StringTokenizer token,Archivo ArcErr,String linea,byte cont)
+	public void inicia2Comandos(Analizador An,StringTokenizer token,Archivo ArcErr,String linea,short cont)
 	{
 		if((linea.startsWith(" ")) || (linea.startsWith("\t")))
 		{
@@ -302,7 +302,7 @@ class Automata
 		}
 	}
 	
-	public void continua2Comandos(Analizador An,Archivo ArcErr,String linea,byte cont)
+	public void continua2Comandos(Analizador An,Archivo ArcErr,String linea,short cont)
 	{
 		if((linea.startsWith(" ")) || (linea.startsWith("\t")))	
 		{
@@ -323,7 +323,7 @@ class Automata
 		}
 	}
 	
-	public void inicia1Comando(Analizador An,StringTokenizer token,Archivo ArcErr,String linea,byte cont)
+	public void inicia1Comando(Analizador An,StringTokenizer token,Archivo ArcErr,String linea,short cont)
 	{
 		if((linea.startsWith(" ")) || (linea.startsWith("\t")))
 		{
@@ -339,7 +339,7 @@ class Automata
 			ingresaEstErr(estadoError(An,ArcErr,cont));		//transicion al estado de Error y se ingresa el valor del atributo
 	}
 	
-	public boolean estadoError(Analizador An,Archivo ArcErr,byte cont)
+	public boolean estadoError(Analizador An,Archivo ArcErr,short cont)
 	{
 		An.ingresarEtiqueta(" ");
 		An.ingresarCodop(" ");		//limpiar atributos
@@ -358,7 +358,7 @@ class Automata
 		return true;		//indica un error en la linea
 	}
 	
-	public boolean estadoEtiqueta(Analizador An,Archivo ArcErr,byte cont)
+	public boolean estadoEtiqueta(Analizador An,Archivo ArcErr,short cont)
 	{
 		byte error;
 		String comando;
@@ -382,7 +382,7 @@ class Automata
 			return false;
 	}
 	
-	public boolean estadoCodop(Analizador An,Archivo ArcErr,byte cont)
+	public boolean estadoCodop(Analizador An,Archivo ArcErr,short cont)
 	{
 		byte error;
 		if((error = An.validarCodop()) != 0)		//Validacion del codigo de Operacion
@@ -421,7 +421,7 @@ class Automata
 			return true;	//linea de codigo sin errores
 	}
 	
-	public void estadoValidaInst(Instruccion In,Analizador An,Automata Au,Direccionamiento Di,Instruccion[] listadeInst,TreeMap<String,String> ArbolDeInst,Archivo ArcIns,Archivo ArcErr,Archivo ArcTds,byte cont)
+	public void estadoValidaInst(Instruccion In,Analizador An,Automata Au,Direccionamiento Di,Instruccion[] listadeInst,TreeMap<String,String> ArbolDeInst,Archivo ArcIns,Archivo ArcErr,Archivo ArcTds,short cont)
 	{
 		String comando;
 		if(In.necesitaOper(An.regresaCodop(), listadeInst) && !An.regresaOper().equalsIgnoreCase("NULL")) //necesita operando y tiene operando
@@ -457,7 +457,7 @@ class Automata
 	
 	}
 	
-	public void estadoSinOper(Analizador An, Automata Au, Direccionamiento Di,Archivo ArcIns,Archivo ArcErr,Archivo ArcTds, TreeMap<String,String> ArbolDeInst,Instruccion[] listadeInst, byte cont)
+	public void estadoSinOper(Analizador An, Automata Au, Direccionamiento Di,Archivo ArcIns,Archivo ArcErr,Archivo ArcTds, TreeMap<String,String> ArbolDeInst,Instruccion[] listadeInst,short cont)
 	{
 		String comando;
 		String dir = ArbolDeInst.get(An.regresaCodop()); //direcc posibles del codop actual
@@ -501,7 +501,7 @@ class Automata
 		}
 	}
 	
-	public void estadoConOper(Analizador An,Automata Au,Direccionamiento Di,Archivo ArcIns,Archivo ArcErr,Archivo ArcTds, TreeMap<String,String> ArbolDeInst,Instruccion[] listadeInst, byte cont)
+	public void estadoConOper(Analizador An,Automata Au,Direccionamiento Di,Archivo ArcIns,Archivo ArcErr,Archivo ArcTds, TreeMap<String,String> ArbolDeInst,Instruccion[] listadeInst,short cont)
 	{
 		String comando;
 		String dir = ArbolDeInst.get(An.regresaCodop()); //direcc posibles del Codop actual
@@ -571,7 +571,7 @@ class Automata
 		
 	}
 	
-	public void estadoValidaDirect(Analizador An,Automata Au,Archivo ArcIns,Archivo ArcErr,Archivo ArcTds,Direccionamiento Di,byte cont)
+	public void estadoValidaDirect(Analizador An,Automata Au,Archivo ArcIns,Archivo ArcErr,Archivo ArcTds,Direccionamiento Di,short cont)
 	{
 		String comando;
 		if(An.regresaCodop().equalsIgnoreCase("ORG"))	//Directiva ORG encontrada

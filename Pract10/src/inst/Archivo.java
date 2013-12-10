@@ -95,7 +95,7 @@ class Archivo
 		}
 	}
 	
-	public void errorSimboloDeBase(Analizador An,byte cont)
+	public void errorSimboloDeBase(Analizador An,short cont)
 	{
 		String comando;
 		comando = An.describirError((byte)11,", formatos validos: $,@,% o un numero"); //simbolo de base erroneo
@@ -108,7 +108,7 @@ class Archivo
 		An.errorDetectado(true); //Bandera para no generar S19
 	}
 	
-	public void errorSimNumInv(Analizador An,byte cont)
+	public void errorSimNumInv(Analizador An,short cont)
 	{
 		String comando;
 		comando = An.describirError((byte)12,", verifique que los numeros pertenecezcan a la base numerica"); //numeros invalidos
@@ -121,7 +121,7 @@ class Archivo
 		An.errorDetectado(true); //Bandera para no generar S19
 	}
 	
-	public void errorDeRango(Analizador An,byte cont)
+	public void errorDeRango(Analizador An,short cont)
 	{
 		String comando;
 		comando = An.describirError((byte)13,", verifique rangos para ese formato de Oper"); //rango invalido
@@ -134,7 +134,7 @@ class Archivo
 		An.errorDetectado(true); //Bandera para no generar S19
 	}
 	
-	public void errorFormatoInv(Analizador An,byte cont)
+	public void errorFormatoInv(Analizador An,short cont)
 	{
 		String comando;
 		comando = An.describirError((byte)14,", verifique los Direccs que acepta el Codop"); //Formato invalido para ese codop
@@ -147,7 +147,7 @@ class Archivo
 		An.errorDetectado(true); //Bandera para no generar S19
 	}
 	
-	public void errorRegistInv(Analizador An,byte cont)
+	public void errorRegistInv(Analizador An,short cont)
 	{
 		String comando;
 		comando = An.describirError((byte)15,", Verifique la sintaxis o validez del registro para ese Codop"); //Formato invalido de Reg PC
@@ -160,7 +160,7 @@ class Archivo
 		An.errorDetectado(true); //Bandera para no generar S19
 	}
 	
-	public void errorOperInv(Analizador An,byte cont)
+	public void errorOperInv(Analizador An,short cont)
 	{
 		String comando;
 		comando = An.describirError((byte)16,", Verifique los formatos validos para los Direccionamientos"); //Oper Invalido para todo codop
@@ -173,7 +173,7 @@ class Archivo
 		An.errorDetectado(true); //Bandera para no generar S19
 	}
 	
-	public void errorOperEtq(Analizador An, byte cont) 
+	public void errorOperEtq(Analizador An,short cont) 
 	{
 		String comando;
 		comando = An.describirError((byte)18,", Verifique los formatos validos para etiquetas"); //Oper Invalido para todo codop
@@ -186,7 +186,7 @@ class Archivo
 		An.errorDetectado(true); //Bandera para no generar S19
 	}
 	
-	public void errorOrgRepetida(Analizador An, byte cont)
+	public void errorOrgRepetida(Analizador An,short cont)
 	{
 		String comando;
 		comando = An.describirError((byte)19,", ORG ya habia sido activada"); //Oper Invalido para todo codop
@@ -199,7 +199,7 @@ class Archivo
 		An.errorDetectado(true); //Bandera para no generar S19
 	}
 	
-	public void errorEquSinComando(Analizador An,Direccionamiento Di, byte cont)
+	public void errorEquSinComando(Analizador An,Direccionamiento Di,short cont)
 	{
 		String comando = "";
 		if(An.regresaEtq().equalsIgnoreCase("NULL"))
@@ -218,7 +218,7 @@ class Archivo
 		An.errorDetectado(true); //Bandera para no generar S19
 	}
 	
-	public void errorDeRangoDirect(Analizador An,byte cont)
+	public void errorDeRangoDirect(Analizador An,short cont)
 	{
 		String comando;
 		comando = An.describirError((byte)21,", verifique rangos de esa Directiva"); //Oper Invalido para esa Directiva
@@ -231,7 +231,7 @@ class Archivo
 		An.errorDetectado(true); //Bandera para no generar S19
 	}
 	
-	public void errorFormatoOper(Analizador An,byte cont)
+	public void errorFormatoOper(Analizador An,short cont)
 	{
 		String comando;
 		comando = An.describirError((byte)14,", el Oper debe iniciar y terminar con comillas"); //Sintaxis invalida en el Oper
@@ -244,7 +244,7 @@ class Archivo
 		An.errorDetectado(true); //Bandera para no generar S19
 	}
 	
-	public void errorDirectsinOper(Analizador An,byte cont)
+	public void errorDirectsinOper(Analizador An,short cont)
 	{
 		String comando;
 		comando = An.describirError((byte)22,", agregar Oper a la directiva"); //Directiva sin Oper
@@ -257,7 +257,7 @@ class Archivo
 		An.errorDetectado(true); //Bandera para no generar S19
 	}
 	
-	public void errorEtqRepetida(Analizador An,byte cont)
+	public void errorEtqRepetida(Analizador An,short cont)
 	{
 		String comando;
 		comando = An.describirError((byte)23,", cambiar Etq a la Inst"); //Etq repetida
@@ -270,7 +270,7 @@ class Archivo
 		An.errorDetectado(true); //Bandera para no generar S19
 	}
 	
-	public void errorOrgInvalida(Analizador An,byte cont)
+	public void errorOrgInvalida(Analizador An,short cont)
 	{
 		String comando;
 		comando = An.describirError((byte)19,", Oper fuera de Rango"); //ORG con Oper fuera de Rango

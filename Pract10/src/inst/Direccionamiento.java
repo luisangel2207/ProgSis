@@ -41,7 +41,7 @@ class Direccionamiento
 				oper.startsWith("9")||oper.startsWith("-"));
 	}
 	
-	public void baseHexadecimal(String baseHex,Analizador An,Automata Au,Archivo ArcErr,Direccionamiento Di, byte cont)
+	public void baseHexadecimal(String baseHex,Analizador An,Automata Au,Archivo ArcErr,Direccionamiento Di,short cont)
 	{
 		int rango = 0;
 		if(baseHex.matches("[A-Fa-f0-9]+[A-Fa-f0-9]*")) //simbolos de base numerica validos
@@ -61,7 +61,7 @@ class Direccionamiento
 		}
 		
 	}
-	public void baseOctal(String baseOct,Analizador An,Automata Au,Archivo ArcErr,Direccionamiento Di, byte cont)
+	public void baseOctal(String baseOct,Analizador An,Automata Au,Archivo ArcErr,Direccionamiento Di,short cont)
 	{
 		int rango = 0;
 		if(baseOct.matches("[0-7]+[0-7]*")) //simbolos de base numerica validos
@@ -80,7 +80,7 @@ class Direccionamiento
 			Au.ingresaEstErrNum(true);
 		}
 	}
-	public void baseBinaria(String baseBin,Analizador An,Automata Au,Archivo ArcErr,Direccionamiento Di, byte cont)
+	public void baseBinaria(String baseBin,Analizador An,Automata Au,Archivo ArcErr,Direccionamiento Di,short cont)
 	{
 		int rango = 0;
 		if(baseBin.matches("[01]+[01]*")) //simbolos de base numerica validos
@@ -99,7 +99,7 @@ class Direccionamiento
 			Au.ingresaEstErrNum(true);
 		}
 	}
-	public void baseDecimal(String baseDec,Analizador An,Automata Au,Archivo ArcErr,Direccionamiento Di,byte cont)
+	public void baseDecimal(String baseDec,Analizador An,Automata Au,Archivo ArcErr,Direccionamiento Di,short cont)
 	{
 		int rango = 0;
 		if(baseDec.matches("[-]*[0-9]+"))  //Simbolos de base numerica validos
@@ -118,17 +118,27 @@ class Direccionamiento
 	{
 		int valor=0;
 		String aux,aux2="";
-		switch(tipo)
+		if(base.length() > 32)
 		{
-		case 1:
-			valor = Integer.parseInt(base, 16); //valor decimal del numero negativo Hex
-			break;
-		case 2:
-			valor = Integer.parseInt(base, 8); //valor decimal del numero negativo Oct
-			break;
-		case 3:
-			valor = Integer.parseInt(base, 2); //valor decimal del numero negativo Bin
-			break;
+			String lin = base;
+			base = "1111";
+			valor = Integer.parseInt(base, 2);
+			base = lin;
+		}
+		else
+		{
+			switch(tipo)
+			{
+			case 1:
+				valor = Integer.parseInt(base, 16); //valor decimal del numero negativo Hex
+				break;
+			case 2:
+				valor = Integer.parseInt(base, 8); //valor decimal del numero negativo Oct
+				break;
+			case 3:
+				valor = Integer.parseInt(base, 2); //valor decimal del numero negativo Bin
+				break;
+			}
 		}
 		aux = Integer.toBinaryString(valor); //cadena con el valor en binario
 		valor = Integer.parseInt(aux,2);	//valor binario en decimal
@@ -200,7 +210,7 @@ class Direccionamiento
 		}
 	}
 	
-	public void direccConOper(Analizador An,Automata Au,Archivo ArcErr,Direccionamiento Di,String direccs,byte cont)
+	public void direccConOper(Analizador An,Automata Au,Archivo ArcErr,Direccionamiento Di,String direccs,short cont)
 	{
 		String base = "", reg = ""; 	
 		if(An.regresaOper().startsWith("#"))
@@ -316,7 +326,7 @@ class Direccionamiento
 		}
 	}
 	
-	public void conversorDeBase(Analizador An,Automata Au,Archivo ArcErr,Direccionamiento Di,byte cont)
+	public void conversorDeBase(Analizador An,Automata Au,Archivo ArcErr,Direccionamiento Di,short cont)
 	{
 		switch(An.regresaOper().charAt(0))		//switch con el simbolo de la base
 		{
@@ -349,7 +359,7 @@ class Direccionamiento
 		}
 	}
 	
-	public void direccConOperEtq(Analizador An,Automata Au,Archivo ArcErr,String direccs,byte cont)
+	public void direccConOperEtq(Analizador An,Automata Au,Archivo ArcErr,String direccs,short cont)
 	{
 		String dirEtq = "";
 		StringTokenizer st = new StringTokenizer(direccs,",");
@@ -385,7 +395,7 @@ class Direccionamiento
 			ArcErr.errorFormatoInv(An,cont);
 	}
 	
-	public void rango8y16BitsImm(Analizador An,Automata Au,Archivo ArcErr,Direccionamiento Di,String direccs,byte cont)
+	public void rango8y16BitsImm(Analizador An,Automata Au,Archivo ArcErr,Direccionamiento Di,String direccs,short cont)
 	{
 		if(Di.regresaRango() >= -256 && Di.regresaRango() <= 255) //Rango de IMM8
 		{
@@ -430,7 +440,7 @@ class Direccionamiento
 			ArcErr.errorFormatoInv(An,cont);	//Oper invalido para Codop actual
 	}
 	
-	public void rangoDirExtRel(Analizador An,Automata Au,Archivo ArcErr,Direccionamiento Di,String direccs,byte cont)
+	public void rangoDirExtRel(Analizador An,Automata Au,Archivo ArcErr,Direccionamiento Di,String direccs,short cont)
 	{
 		if(Di.regresaRango() >= -128 && Di.regresaRango() <= 127) //Rango de Rel8
 		{
@@ -522,7 +532,7 @@ class Direccionamiento
 			ArcErr.errorFormatoInv(An,cont);	//Oper invalido para Codop actual
 	}
 	
-	public void rangoIdxIdx1Idx2(Analizador An,Automata Au,Archivo ArcErr,Direccionamiento Di,String direccs,String reg,byte cont)
+	public void rangoIdxIdx1Idx2(Analizador An,Automata Au,Archivo ArcErr,Direccionamiento Di,String direccs,String reg,short cont)
 	{
 		if(Au.regresEstIdxVacio())
 		{
@@ -668,7 +678,7 @@ class Direccionamiento
 		}
 	}
 	
-	public void rangoIdxIndirecto(Analizador An,Automata Au,Archivo ArcErr,Direccionamiento Di,String direccs,byte cont)
+	public void rangoIdxIndirecto(Analizador An,Automata Au,Archivo ArcErr,Direccionamiento Di,String direccs,short cont)
 	{
 		if(Au.regresEstIdxVacio())
 		{

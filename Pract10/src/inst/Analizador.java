@@ -420,7 +420,8 @@ public class Analizador
 	public static void main(String[] args) throws IOException
 	{
 		String nombre,ruta,comando = "",encabezado,linea;
-		byte tokens,cont = 1;
+		byte tokens;
+		short cont = 1;
 		boolean band,termina;
 		band = termina = false;
 		Instruccion[] listadeInst;

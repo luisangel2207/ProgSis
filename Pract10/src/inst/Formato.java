@@ -70,16 +70,8 @@ class Formato
 				contLocS1Act = Analizador.FormatoContLoc(); //se ingresa la nueva direccion del ContLoc
 				continue;
 			}
-			if(elemento.get(3).equalsIgnoreCase("EQU")) //directiva EQU
-			{
-				aux = buffer; //se respalda el buffer
-				continue;
-			}
-			if(elemento.get(3).equalsIgnoreCase("FCC")) //directiva FCC
-				aux = buffer; //se respalda el buffer
 			
-			
-			if(!An.esMemoria1Byte(elemento.get(3)) && !An.esMemoria2Bytes(elemento.get(3)) && !elemento.get(3).equalsIgnoreCase("END")) //Si el Codop no es una directiva de memoria o END
+			if(!An.esMemoria1Byte(elemento.get(3)) && !An.esMemoria2Bytes(elemento.get(3)) && !elemento.get(3).equalsIgnoreCase("END") && !elemento.get(3).equalsIgnoreCase("EQU")) //Si el Codop no es una directiva de memoria o END
 			{
 				if(aux.length() != 0) //si el auxiliar contiene datos
 				{
@@ -149,12 +141,38 @@ class Formato
 					}	
 				}
 			}
-			else //directivas de memoria o END
+			else //directivas de memoria, EQU o END
 			{
-				formatoS1(lineaaux,s1,ArcS19); //da formato al Registro S1
-				lineaaux = ""; //limpiamos el registro
-				aux = buffer; //respaldamos en caso de que el buffer aun contenga datos
-				buffer = ""; //limpiamos el buffer
+				if(lineaaux.length() != 0) //si existe un registro S1 por escribir
+				{
+					formatoS1(lineaaux,s1,ArcS19); //da formato al Registro S1
+					lineaaux = ""; //limpiamos el registro
+					aux = buffer; //respaldamos en caso de que el buffer aun contenga datos
+					buffer = ""; //limpiamos el buffer
+					contLocS1Act = Analizador.FormatoContLoc(); //Actualizamos el valor del ContLoc para el siguiente Registro
+				}
+				else if(aux.length() != 0) //si tenemos datos pendientes por escribir
+				{
+					while(aux.length() != 0) //mientras el auxiliar tenga datos
+					{
+						while(lineaaux.length() < 32) //mientras el registro no exceda los 16 bytes
+						{
+							lineaaux += aux.substring(0,2); 
+							aux = aux.substring(2);
+							An.AumentarContLoc(1);
+					
+							if(aux.length() == 0)
+								break;
+						}
+					
+						if(lineaaux.length() == 32 || (aux.length() == 0 && lineaaux.length() != 0)) //si se alcanzo el limite de datos o se vacio el aux
+						{
+							formatoS1(lineaaux,s1,ArcS19); //da formato al registro S1
+							lineaaux = ""; //limpiamos el registro
+							contLocS1Act = Analizador.FormatoContLoc(); //Actualizamos el valor del ContLoc para el siguiente Registro
+						}
+					}
+				}
 				
 				if(An.esMemoria1Byte(elemento.get(3))) //memoria de un byte
 				{
@@ -166,6 +184,8 @@ class Formato
 					An.AumentarContLoc(Ve.conversor(elemento.get(4)) * 2); //obtenemos el valor de Oper de la directiva y aumentamos el doble al ContLoc
 					contLocS1Act = Analizador.FormatoContLoc(); //Actualizamos el valor del ContLoc para el siguiente Registro
 				}
+				else
+					continue;
 			}
 			
 		}
@@ -213,10 +233,11 @@ class Formato
 			linea = linea.substring(2);
 		}
 		acum = ~acum;
-		checksum = Integer.toHexString(acum).toUpperCase();
+		checksum = Integer.toHexString(acum);
 		checksum = checksum.substring(checksum.length()-2);
 		
 		s1 = regS1 + s1 + checksum; //S1 + tam + direccion + datos + checksum
+		s1 = s1.toUpperCase();
 		
 		try
 		{ArcS19.escribir(s1);} //Escribimos el Registro en el Archivo S19
